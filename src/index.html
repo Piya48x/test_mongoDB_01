@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register and Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Register</h2>
+  <div>
+    <input type="text" id="registerUsername" placeholder="Username" />
+    <input type="password" id="registerPassword" placeholder="Password" />
+    <button onclick="register()">Register</button>
+  </div>
+
+  <h2>Login</h2>
+  <div>
+    <input type="text" id="loginUsername" placeholder="Username" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <h2>Access Dashboard</h2>
+  <button onclick="accessDashboard()">Go to Dashboard</button>
+  <pre id="output"></pre>
+
+  <script>
+    let token = '';
+
+    async function register() {
+      const username = document.getElementById('registerUsername').value;
+      const password = document.getElementById('registerPassword').value;
+
+      const response = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.text();
+      document.getElementById('output').textContent = data;
+    }
+
+    async function login() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+      if (data.accessToken) {
+        token = data.accessToken;
+        document.getElementById('output').textContent = 'Login successful! Token stored.';
+      } else {
+        document.getElementById('output').textContent = 'Login failed.';
+      }
+    }
+
+    async function accessDashboard() {
+      const response = await fetch('http://localhost:3000/dashboard', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      } else {
+        document.getElementById('output').textContent = 'Access denied. Login first!';
+      }
+    }
+  </script>
+</body>
+</html>
